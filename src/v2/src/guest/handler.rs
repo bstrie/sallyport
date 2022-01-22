@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::alloc::{phase, Alloc, Allocator, Collect, Commit, Committer};
-use super::{syscall, Call, Platform};
+use super::{syscall, Call, Platform, ValidSlice};
 use crate::{item, Result};
 
 use libc::{c_int, gid_t, pid_t, size_t, stat, uid_t, ENOSYS};
@@ -137,8 +137,8 @@ pub trait Execute {
     }
 
     /// Executes [`write`](https://man7.org/linux/man-pages/man2/write.2.html) syscall akin to [`libc::write`].
-    fn write(&mut self, fd: c_int, buf: &[u8]) -> Result<size_t> {
-        self.execute(syscall::Write { fd, buf })?
+    fn write(&mut self, fd: c_int, buf: ValidSlice<u8>) -> Result<size_t> {
+        self.execute(syscall::Write { fd, buf: buf.extract() })?
             .unwrap_or_else(|| self.attacked())
     }
 }
